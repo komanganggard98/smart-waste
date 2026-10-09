@@ -1,47 +1,74 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Schema, DB};
+use Illuminate\Database\Schema\Blueprint;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement(
-            'ALTER TABLE `waste_logs` DROP FOREIGN KEY `waste_logs_ingredient_batch_id_foreign`'
-        );
 
-        DB::statement(
-            'ALTER TABLE `waste_logs` MODIFY `ingredient_batch_id` BIGINT UNSIGNED NOT NULL'
-        );
+        // 1. Ambil nama-nama foreign key yang benar-benar ada di database saat ini
+        $foreignKeys = DB::select("
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = SCHEMA() 
+              AND TABLE_NAME = 'waste_logs' 
+              AND CONSTRAINT_NAME = 'waste_logs_ingredient_batch_id_foreign'
+        ");
 
-        DB::statement(
-            'ALTER TABLE `ingredient_batches` MODIFY `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT'
-        );
+        Schema::table('waste_logs', function (Blueprint $table) use ($foreignKeys) {
+            // Hapus FK HANYA jika memang terdeteksi ada di MySQL
+            if (!empty($foreignKeys)) {
+                $table->dropForeign('waste_logs_ingredient_batch_id_foreign');
+            }
+        });
 
-        DB::statement(
-            'ALTER TABLE `waste_logs` ADD CONSTRAINT `waste_logs_ingredient_batch_id_foreign` '
-            . 'FOREIGN KEY (`ingredient_batch_id`) REFERENCES `ingredient_batches` (`id`) ON DELETE CASCADE'
-        );
+        // 2. Ubah tipe kolom
+        Schema::table('ingredient_batches', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->autoIncrement()->change();
+        });
+
+        Schema::table('waste_logs', function (Blueprint $table) {
+            $table->unsignedBigInteger('ingredient_batch_id')->change();
+
+            // 3. Pasang kembali Foreign Key
+            $table->foreign('ingredient_batch_id')
+                  ->references('id')
+                  ->on('ingredient_batches')
+                  ->onDelete('cascade');
+        });
     }
 
     public function down(): void
     {
-        DB::statement(
-            'ALTER TABLE `waste_logs` DROP FOREIGN KEY `waste_logs_ingredient_batch_id_foreign`'
-        );
+       
+        $foreignKeys = DB::select("
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = SCHEMA() 
+              AND TABLE_NAME = 'waste_logs' 
+              AND CONSTRAINT_NAME = 'waste_logs_ingredient_batch_id_foreign'
+        ");
 
-        DB::statement(
-            'ALTER TABLE `ingredient_batches` MODIFY `id` CHAR(36) NOT NULL'
-        );
+        Schema::table('waste_logs', function (Blueprint $table) use ($foreignKeys) {
+            if (!empty($foreignKeys)) {
+                $table->dropForeign('waste_logs_ingredient_batch_id_foreign');
+            }
+        });
 
-        DB::statement(
-            'ALTER TABLE `waste_logs` MODIFY `ingredient_batch_id` CHAR(36) NOT NULL'
-        );
+        Schema::table('ingredient_batches', function (Blueprint $table) {
+            $table->char('id', 36)->change();
+        });
 
-        DB::statement(
-            'ALTER TABLE `waste_logs` ADD CONSTRAINT `waste_logs_ingredient_batch_id_foreign` '
-            . 'FOREIGN KEY (`ingredient_batch_id`) REFERENCES `ingredient_batches` (`id`) ON DELETE CASCADE'
-        );
+        Schema::table('waste_logs', function (Blueprint $table) {
+            $table->char('ingredient_batch_id', 36)->change();
+
+            $table->foreign('ingredient_batch_id')
+                  ->references('id')
+                  ->on('ingredient_batches')
+                  ->onDelete('cascade');
+        });
     }
 };
