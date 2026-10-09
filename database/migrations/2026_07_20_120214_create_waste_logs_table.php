@@ -2,8 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Support\Facades\{Schema, DB};
 return new class extends Migration
 {
     /**
@@ -33,6 +32,13 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('waste_logs', function (Blueprint $table) {
+            // Hapus Foreign Key HANYA jika foreign key tersebut ada
+            // Gunakan array untuk menghapus FK berdasarkan nama kolomnya
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->dropForeign(['ingredient_batch_id']); 
+            }
+        });
         Schema::dropIfExists('waste_logs');
     }
 };
