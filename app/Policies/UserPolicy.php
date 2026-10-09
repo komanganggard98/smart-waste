@@ -46,10 +46,10 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        // Manager hanya bisa update bawahan di cabangnya (bukan sesama manager/owner)
-        return $user->hasRole('branch_manager') 
-            && $user->branch_id === $model->branch_id
-            && ! $model->hasAnyRole(['owner', 'branch_manager']);
+        // Manager hanya bisa update bawahan di cabangnya (bukan sesama manager/owner) / akun miliknya
+        return (
+             $user->hasRole('branch_manager') && $user->branch_id === $model->branch_id && ! $model->hasAnyRole(['owner', 'branch_manager'])
+        ) || $user->id === $model->id;
     }
 
     /**

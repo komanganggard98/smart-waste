@@ -3,15 +3,14 @@
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem } from "@/Components/ui/sidebar";
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import { NavItem, NavMain } from "@/Components/shadcn-space/blocks/sidebar-01/nav-main";
-import {  FileWarning, LayoutDashboard, Package, ReceiptText, Recycle, Settings2, Store, Users } from "lucide-react";
+import {  FileWarning, LayoutDashboard, Package, ReceiptText, Settings2, Store, Users } from "lucide-react";
 import { Link } from "@inertiajs/react";
-import { useEffect } from "react";
+import ApplicationLogo from "@/Components/ApplicationLogo";
 
 export const navData: NavItem[] = [
   { label: "Workspace", isSection: true },
   { title: "Dashboard", icon: LayoutDashboard, href: route("dashboard") },
-  { title: "Ingredients", icon: Package, href: route("ingredients.index"), permission:'viewIngredient' },
-  // { title: "Batches", icon: Warehouse, href: route("ingredient-batches.index") },
+  { title: "Ingredients", icon: Package, href: route("ingredients.index"), permission:'viewAnyIngredient' },
   { title: "Stock usage", icon: ReceiptText, href: route("stock-consumptions.index"), permission:'viewAnyStockConsumption' },
   { title: "Template", icon: ReceiptText, href: route("stock-consumption-templates.index"), permission:'viewAnyStockConsumptionTemplate' },
   { title: "Waste logs", icon: FileWarning, href: route("waste-logs.index"), permission:'viewAnyWasteLog' },
@@ -30,9 +29,7 @@ export function AppSidebar({auth}:{auth:any}) {
           <SidebarMenu>
             <SidebarMenuItem>
               <Link href={route("dashboard")} className="flex items-center gap-3 py-1">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white">
-                    <Recycle size={20} />
-                  </div>
+                  <ApplicationLogo />
                   <div>
                     <p className="text-sm font-bold tracking-wide text-slate-900">SMART WASTE</p>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-700">Inventory control</p>

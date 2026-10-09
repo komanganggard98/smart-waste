@@ -284,7 +284,7 @@ function CreateContent({ auth, available_batches, templates, default_batch_id, d
                         )}
                         {!isOwner && (
                             <TextInput 
-                                value={branch ?? (data.branch_id ? `Branch #${data.branch_id}` : 'Selected from batch')} 
+                                value={branch ?? (data.branch_id ? branchesList.find((b) => b.id === +data.branch_id)?.name : 'Selected from batch')} 
                                 className="mt-1 w-full bg-slate-50" 
                                 readOnly 
                             />

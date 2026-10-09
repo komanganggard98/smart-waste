@@ -7,6 +7,11 @@ export interface BranchState {
     address: string;
     is_active: boolean;
     deleted_at?: string;
+    can?:{
+        update?: boolean;
+        delete?: boolean;
+        view?: boolean;
+    }
 }
 
 export interface FormBranchState {

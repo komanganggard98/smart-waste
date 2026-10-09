@@ -40,7 +40,7 @@ function DashboardContent({ auth, metrics }: PageProps<{metrics: MetricsState}>)
             setSearching(true);
             try {
                 const response = await axios.get(route('ingredients.list'), {
-                    params: { name: query },
+                    params: { name: query, branch_id: user?.branch_id ?? null },
                     signal: controller.signal,
                 });
                 const data = response.data.data;
@@ -67,7 +67,7 @@ function DashboardContent({ auth, metrics }: PageProps<{metrics: MetricsState}>)
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <TextInput
                         type="text"
-                        placeholder="Search ingredients, SKUs..."
+                        placeholder="Search ingredients, SKU/IngredientCode..."
                         className="w-full pl-10"
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}

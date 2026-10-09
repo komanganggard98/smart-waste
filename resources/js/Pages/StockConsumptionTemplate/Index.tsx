@@ -48,15 +48,16 @@ export default function Index({ data, auth }: PageProps<StockConsumptionTemplate
     };
     return (
         <Layout>
-            <Head title={`Waste Logs`} />
+            <Head title={`Stock Usage Templates`} />
             <div className={`mx-auto max-w-6xl space-y-5`}>
                 <div className={`flex flex-col justify-between gap-4 sm:flex-row sm:items-end`}>
                     <div>
-                        <p className={`text-sm font-medium text-red-600`}>Inventory Management</p>
                         <h1 className={`mt-1 text-2xl font-semibold text-slate-900 inline-flex gap-1 items-center`}>
-                            <ReceiptText /> Stock Usages
+                            <ReceiptText /> Stock Usage Templates
                         </h1>
-                        <p className={`mt-1 text-sm text-slate-500`}>Track and monitor ingredients consumed for operations, events, and daily prep.</p>
+                        <p className={`mt-1 text-sm text-slate-500`}>
+                            Create reusable ingredient quantities for a recurring recipe or operating process. Each quantity uses the ingredient's standard unit.
+                        </p>
                     </div>
                     {createStockConsumptionTemplate && (
                         <Link href={route('stock-consumption-templates.create')}>

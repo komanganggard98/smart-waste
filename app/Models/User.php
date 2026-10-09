@@ -45,7 +45,7 @@ class User extends Authenticatable
     }
 
     public function getPermissions(){
-        $classAbilities =  ['viewAny','view','create','update','delete'];
+        $classAbilities =  ['viewAny','create'];
         $models = [
             'User' => User::class,
             'Branch' => Branch::class,

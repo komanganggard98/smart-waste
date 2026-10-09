@@ -22,7 +22,7 @@ class BranchPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->branch_id !== null;
+        return false;
     }
 
     /**

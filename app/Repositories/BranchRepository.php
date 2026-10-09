@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Branch;
+use Illuminate\Support\Facades\Auth;
 
 class BranchRepository extends BaseRepository
 {
@@ -25,6 +26,24 @@ class BranchRepository extends BaseRepository
             ->when(!blank($filters['is_archive'] ?? null), fn($q) => $q->onlyTrashed())
             ->when(!blank($filters['with_total_ingredients'] ?? null), fn ($q) => $q->withCount('ingredients'))
             // ->orderBy(($filters['order_by'] ?? 'id'),  ($filters['order_type'] ?? 'desc'))
-            ->when(!blank($filters['is_paginate'] ?? null), fn ($q) => $q->paginate(5), fn ($q) => $q->get());
+            ->when(!blank($filters['is_paginate'] ?? null), 
+                fn ($q) => $q->paginate(5)->through(function ($branch) {
+                    $item = $branch;
+                    $item->can = [
+                        'update' => Auth::user()->can('update', $branch),
+                        'delete' => Auth::user()->can('delete', $branch),
+                        'view'   => Auth::user()->can('view', $branch),
+                    ];
+                    return $branch;
+                }), 
+                fn ($q) => $q->get()->map(function ($branch) {
+                    $item = $branch;
+                    $item->can = [
+                        'update' => Auth::user()->can('update', $branch),
+                        'delete' => Auth::user()->can('delete', $branch),
+                        'view'   => Auth::user()->can('view', $branch),
+                    ];
+                    return $branch;
+                }));
     }
 }

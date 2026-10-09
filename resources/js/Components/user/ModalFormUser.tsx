@@ -173,22 +173,23 @@ export default function ModalFormUser({
                                         <InputError message={(clientErrors['branch_id'] ?? errors['branch_id']) ?? ''} />
                                     </div>
                                 )}
-
-                                <div className="space-y-1.5">
-                                    <InputLabel htmlFor="role_id" value="Role" />
-                                    {rolesList.length > 0 && (
-                                    <SelectInput
-                                        id="role_id"
-                                        autoFocus={!isOwner}
-                                        required
-                                        className="w-full"
-                                        value={data.role_id}
-                                        options={[{ value: '', label: 'Select role' }, ...rolesList]}
-                                        onChange={(e) => handleChange('role_id', e.target.value)}
-                                    />
-                                    )}
-                                    <InputError message={(clientErrors['role_id'] ?? errors['role_id']) ?? ''} />
-                                </div>
+                                {(isOwner || (!isOwner && user.id  !== initialData?.id)) && (
+                                    <div className="space-y-1.5">
+                                        <InputLabel htmlFor="role_id" value="Role" />
+                                        {rolesList.length > 0 && (
+                                        <SelectInput
+                                            id="role_id"
+                                            autoFocus={!isOwner}
+                                            required
+                                            className="w-full"
+                                            value={data.role_id}
+                                            options={[{ value: '', label: 'Select role' }, ...rolesList]}
+                                            onChange={(e) => handleChange('role_id', e.target.value)}
+                                        />
+                                        )}
+                                        <InputError message={(clientErrors['role_id'] ?? errors['role_id']) ?? ''} />
+                                    </div>
+                                )}
                             </div>
 
                             {/* Row 2: Name Input */}

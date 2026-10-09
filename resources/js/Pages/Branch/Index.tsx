@@ -35,9 +35,8 @@ export default function Index({ data = [], filters = {}, auth }: PageProps<Branc
     const pagination = Array.isArray(data) ? undefined : data;
     const branches = Array.isArray(data) ? data : data.data;
     const user = auth.user
+    const isOwner = user.roles.some((role: RoleState) => role.name === 'owner');
     const createBranch = user.can?.['createBranch'] ?? false
-    const deleteBranch = user.can?.['deleteBranch'] ?? false
-    const updateBranch = user.can?.['updateBranch'] ?? false
     const [search, setSearch] = useState<string>(filters.search ?? '');
     const [showAddBranch, setShowAddBranch] = useState<boolean>(false)
     const [list, setList] = useState<BranchIndexRow[]>(branches)
@@ -46,8 +45,10 @@ export default function Index({ data = [], filters = {}, auth }: PageProps<Branc
     const [deleting, setDeleting] = useState<boolean>(false);
     const [activating, setActivating] = useState<boolean>(false);
     const [detailBranch, setDetailBranch] = useState<undefined | BranchState>()
+    const [showActionColumn, setShowActionColumn] = useState<boolean>(false)
 
     useEffect(() => {
+        setShowActionColumn(branches.some(branch => branch.can?.['update'] || branch.can?.['delete']))
         setList(branches)
     },[branches])
 
@@ -76,7 +77,7 @@ export default function Index({ data = [], filters = {}, auth }: PageProps<Branc
         const params = {
             is_active: activeFilter === 'all' ? undefined : activeFilter,
             is_archive: archiveFilter,
-            branch_id: filters.branch_id || undefined,
+            branch_id: isOwner ? (filters.branch_id || undefined) : undefined,
             name: search || undefined,
             ...next,
         };
@@ -95,7 +96,7 @@ export default function Index({ data = [], filters = {}, auth }: PageProps<Branc
 
     return (
         <Layout>
-            <Head title={`Ingredients`} />
+            <Head title={`Branches`} />
             <div className={`mx-auto max-w-6xl space-y-5`}>
                 <div>
                     <h1 className={`text-2xl font-semibold text-slate-900`}>Branches</h1>
@@ -159,52 +160,60 @@ export default function Index({ data = [], filters = {}, auth }: PageProps<Branc
                                     <th className={`px-4 py-3 text-left font-semibold text-slate-700`}>Address</th>
                                     <th className={`px-4 py-3 text-left font-semibold text-slate-700`}>Total Ingredients</th>
                                     <th className={`px-4 py-3 text-left font-semibold text-slate-700`}>Active</th>
-                                    {(updateBranch || deleteBranch) && (
+                                    {showActionColumn && (
                                         <th className={`px-4 py-3 text-right font-semibold text-slate-700`}>Action</th>
                                     )}
                                 </tr></thead>
                                 <tbody className={`divide-y divide-slate-200`}>
-                                    {list.map((branch) => (
-                                        <tr key={branch.id} className={`hover:bg-slate-50`}>
-                                            <td className={`px-4 py-3`}>
-                                                <p className={`font-medium text-slate-900`}>{branch.name}</p>
-                                            </td>
-                                            <td className={`px-4 py-3 text-slate-600`}>{branch.address} </td>
-                                            <td className={`px-4 py-3 text-slate-600`}>{Number(branch.ingredients_count ?? 0)}</td>
-                                            <td className={`px-4 py-3 text-slate-600`}>
-                                                <ToggleSwitch 
-                                                    checked={branch.is_active} 
-                                                    onChange={() => setActivateTarget(branch)} 
-                                                    color={`green`}
-                                                    disabled={!updateBranch}
-                                                />
-                                            </td>
-                                            {(updateBranch || deleteBranch) && (
+                                    {list.map((branch) => {
+                                        const canUpdate = branch.can?.['update'] ?? false;
+                                        const canDelete = branch.can?.['delete'] ?? false;
+                                        return(
+                                            <tr key={branch.id} className={`hover:bg-slate-50`}>
                                                 <td className={`px-4 py-3`}>
-                                                    <div className={`flex justify-end gap-2`}>
-                                                        <Button 
-                                                            type={`button`} 
-                                                            variant={`outline`} 
-                                                            size={`sm`}
-                                                            onClick={() => setDetailBranch(branch)}
-                                                        >
-                                                            <Eye className={`mr-1 h-4 w-4`} /> View
-                                                        </Button>
-
-                                                        <Button
-                                                            type={`button`}
-                                                            variant={`destructive`}
-                                                            size={`sm`}
-                                                            aria-label={`Delete ${branch.name}`}
-                                                            onClick={() => setDeleteTarget(branch)}
-                                                        >
-                                                            <Trash2 className={`mr-1 h-4 w-4`} /> Delete
-                                                        </Button>
-                                                    </div>
+                                                    <p className={`font-medium text-slate-900`}>{branch.name}</p>
                                                 </td>
-                                            )}
-                                        </tr>
-                                    ))}
+                                                <td className={`px-4 py-3 text-slate-600`}>{branch.address} </td>
+                                                <td className={`px-4 py-3 text-slate-600`}>{Number(branch.ingredients_count ?? 0)}</td>
+                                                <td className={`px-4 py-3 text-slate-600`}>
+                                                    <ToggleSwitch 
+                                                        checked={branch.is_active} 
+                                                        onChange={() => setActivateTarget(branch)} 
+                                                        color={`green`}
+                                                        disabled={!branch.can?.['update']}
+                                                    />
+                                                </td>
+                                                {showActionColumn && (
+                                                    <td className={`px-4 py-3`}>
+                                                        <div className={`flex justify-end gap-2`}>
+                                                            {canUpdate && (
+                                                                <Button 
+                                                                    type={`button`} 
+                                                                    variant={`outline`} 
+                                                                    size={`sm`}
+                                                                    onClick={() => setDetailBranch(branch)}
+                                                                >
+                                                                    <Eye className={`mr-1 h-4 w-4`} /> View
+                                                                </Button>
+                                                            )}
+
+                                                            {canDelete && (
+                                                                <Button
+                                                                    type={`button`}
+                                                                    variant={`destructive`}
+                                                                    size={`sm`}
+                                                                    aria-label={`Delete ${branch.name}`}
+                                                                    onClick={() => setDeleteTarget(branch)}
+                                                                >
+                                                                    <Trash2 className={`mr-1 h-4 w-4`} /> Delete
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        )
+                                    } )}
                                 </tbody>
                             </table>
                         </div>

@@ -30,9 +30,6 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        if($user){
-            $user->can = $user->getPermissions();
-        }
         return [
             ...parent::share($request),
             'flash' => [
@@ -41,7 +38,7 @@ class HandleInertiaRequests extends Middleware
                 'notifications' => fn () => $request->session()->get('notifications'),
             ],
             'auth' => [
-                'user' => $user,
+                'user' => fn () => $user ? $user->setAttribute('can', $user->getPermissions()) : null,
             ],
         ];
     }

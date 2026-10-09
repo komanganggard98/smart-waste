@@ -24,6 +24,12 @@ class UserService{
             'with_branch' => true,
             'with_role' => true
         ]);
+        $isOwner = $request->user()->hasRole('owner');
+        if(!$isOwner){
+            $request->merge([
+                'branch_id' => $request->user()->branch_id
+            ]);
+        }
         return [
             'data' => $this->normalizeData($this->userRepo->getData($request)),
             'branches' => $request->user()->branch_id ? [] : $this->branchRepo->getData([],['*']),

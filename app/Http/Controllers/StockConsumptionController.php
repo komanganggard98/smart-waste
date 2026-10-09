@@ -41,7 +41,8 @@ class StockConsumptionController extends Controller
             ->orderBy('name')
             ->get();
 
-        $branches = $user->hasRole('owner') ? $this->branchRepo->getData([]) : [];
+        $params = $user->hasRole('owner') ? [] : ['id' => $user->branch_id];
+        $branches = $this->branchRepo->getData($params);
 
         return Inertia::render('StockConsumptions/Create', [
             'available_batches' => $this->ingredientBatchService->availableBatches($user, $request),

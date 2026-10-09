@@ -1,9 +1,9 @@
 import Layout from '@/Layouts/Layout';
 import ConfirmDeleteModal from '@/Components/ConfirmDeleteModal';
 import { Head, Link, router } from '@inertiajs/react';
-import { PageProps, BranchState, RoleState, UserState } from '@/types';
+import { PageProps, BranchState, RoleState,  UserState } from '@/types';
 import { Search, PackageSearch, Eye, Plus, Trash2 } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import TextInput from '@/Components/TextInput';
 import SelectInput from '@/Components/SelectInput';
@@ -29,8 +29,6 @@ function IndexContent({ data = [], filters = {}, branches = [], roles = [], auth
     const user = auth.user
     const isOwner = (user.roles as RoleState[]).some((role: RoleState) => role.name === 'owner');
     const createUser = user.can?.['createUser'] ?? false
-    const updateUser = user.can?.['updateUser'] ?? false
-    const deleteUser = user.can?.['deleteUser'] ?? false
     const pagination = Array.isArray(data) ? undefined : data;
     const users = Array.isArray(data) ? data : data.data;
 
@@ -41,6 +39,11 @@ function IndexContent({ data = [], filters = {}, branches = [], roles = [], auth
     const [deleting, setDeleting] = useState(false);
 
     const [detailUser, setDetailUser] = useState<undefined | UserState>()
+    const [showAction, setShowAction] = useState<boolean>(false)
+
+    useEffect(() => {
+        setShowAction(users.some((u:UserState) => u.can?.['delete'] || u.can?.['update']))
+    },[users])
 
     const deleteuser = () => {
         if (!deleteTarget) return;
@@ -140,11 +143,15 @@ function IndexContent({ data = [], filters = {}, branches = [], roles = [], auth
                                         <th className="px-4 py-3 text-left font-semibold text-slate-700">User</th>
                                         {isOwner && <th className="px-4 py-3 text-left font-semibold text-slate-700">Branch</th>}
                                         <th className="px-4 py-3 text-left font-semibold text-slate-700">Role</th>
-                                        <th className="px-4 py-3 text-right font-semibold text-slate-700">Action</th>
+                                        {showAction && (
+                                            <th className="px-4 py-3 text-right font-semibold text-slate-700">Action</th>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200">
                                     {users.map((user) => {
+                                        const canUpdate = user.can?.['update']
+                                        const canDelete = user.can?.['delete']
                                         return(
                                         <tr key={user.id} className="hover:bg-slate-50">
                                             <td className="px-4 py-3">
@@ -157,27 +164,33 @@ function IndexContent({ data = [], filters = {}, branches = [], roles = [], auth
                                                     <span className={`text-xs border-emerald-200 bg-emerald-50 text-emerald-800 rounded-full px-2 py-1`}>{user.roles[0]?.name?.replaceAll('_',' ')}</span>
                                                 ): '-'}
                                             </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button 
-                                                        type="button" 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        onClick={() => setDetailUser(user)}
-                                                    >
-                                                        <Eye className="mr-1 h-4 w-4" /> View
-                                                    </Button>
-                                                    <Button
-                                                        type="button"
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        aria-label={`Delete ${user.name}`}
-                                                        onClick={() => setDeleteTarget(user)}
-                                                    >
-                                                        <Trash2 className="mr-1 h-4 w-4" /> Delete
-                                                    </Button>
-                                                </div>
-                                            </td>
+                                            {showAction && (
+                                                <td className="px-4 py-3">
+                                                    <div className="flex justify-end gap-2">
+                                                        {canUpdate && (
+                                                            <Button 
+                                                                type="button" 
+                                                                variant="outline" 
+                                                                size="sm"
+                                                                onClick={() => setDetailUser(user)}
+                                                            >
+                                                                <Eye className="mr-1 h-4 w-4" /> View
+                                                            </Button>
+                                                        )}
+                                                        {canDelete && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                aria-label={`Delete ${user.name}`}
+                                                                onClick={() => setDeleteTarget(user)}
+                                                            >
+                                                                <Trash2 className="mr-1 h-4 w-4" /> Delete
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            )}
                                         </tr>
                                         )
                                     })}
@@ -259,7 +272,7 @@ function IndexContent({ data = [], filters = {}, branches = [], roles = [], auth
 export default function Index({ data = [], filters = {}, branches = [], roles = [], auth }: PageProps<UserIndexProps>) {
     return (
         <Layout>
-            <Head title="users" />
+            <Head title="Users" />
             <BranchesProvider>
                 <IndexContent
                     data={data}

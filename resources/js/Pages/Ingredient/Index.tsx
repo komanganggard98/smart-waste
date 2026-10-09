@@ -74,7 +74,7 @@ function IndexContent({ data = [], filters = {}, branches = [], auth }: PageProp
     const visitWithFilters = (next: Record<string, string | number | undefined>) => {
         const params = {
             filter: activeFilter === 'all' ? undefined : activeFilter,
-            branch_id: filters.branch_id || undefined,
+            branch_id: isOwner ? (filters.branch_id || undefined) : undefined,
             search: search || undefined,
             ...next,
         };

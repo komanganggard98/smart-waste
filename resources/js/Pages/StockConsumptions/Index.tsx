@@ -27,7 +27,7 @@ export default function Index({ stock_consumptions, auth }: PageProps<StockConsu
     const createStockConsumption = user.can?.['createStockConsumption'] ?? false
     return (
         <Layout>
-            <Head title="Waste Logs" />
+            <Head title="Stock Usages" />
             <div className="mx-auto max-w-6xl space-y-5">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                     <div>

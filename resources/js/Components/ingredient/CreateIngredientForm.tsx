@@ -27,8 +27,9 @@ export default function CreateIngredientForm({
     branchId,
     submitLabel = 'Submit'
 }: IngredientFormProps){
-    const totalStep:number = 4
-    const [step, setStep] = useState<number>(1);
+    const isOwner = user?.roles.some((role) => role.name === 'owner');
+    const totalStep:number = isOwner ? 4 : 3
+    const [step, setStep] = useState<number>(isOwner ? 1 : 2);
 
     const { clientErrors, isError, handleValidate, validateField, setClientErrors } = useFormValidator(ingredientFormSchema);
     const { clientErrors:clientErrorsBatch, isError:isErrorBatch, handleValidate:handleValidateBatch, validateField:validateFieldBatch, setClientErrors: setBatchErrors } = useFormValidator(ingredientBatchFormSchema);
@@ -70,7 +71,6 @@ export default function CreateIngredientForm({
             }
         },
     });
-
 
     const [batchData, setBatchData] = useState<FormIngredientBatchState>({
         batch_number: '',
